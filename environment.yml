@@ -1,0 +1,10 @@
+name: base
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - ipykernel
+  - notebook
+  - pip:
+    - python-telegram-bot
