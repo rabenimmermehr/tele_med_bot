@@ -40,7 +40,9 @@ def start(update, context):
 def alarm(context):
     """Send the alarm message."""
     job = context.job
-    context.bot.send_message(job.context, text="Beep!")
+    context.bot.send_message(
+        job.context, text="Pipi Tanz, Pipi Tanz, Zeit für Pipi Tanz!"
+    )
 
 
 def set_timer(update, context):
@@ -60,11 +62,13 @@ def set_timer(update, context):
         reminder_time = datetime.time(hour, minute, tzinfo=tz.tzlocal())
 
         # Add job to queue and stop current one if there is a timer already
-        if "job" in context.chat_data:
-            old_job = context.chat_data["job"]
-            old_job.schedule_removal()
         new_job = context.job_queue.run_daily(alarm, reminder_time, context=chat_id)
-        context.chat_data["job"] = new_job
+        if not "jobs" in context.chat_data:
+            # Initialize list of jobs
+            context.chat_data["jobs"] = []
+
+        # Add new job to list of Jobs
+        context.chat_data["jobs"] = context.chat_data["jobs"] + [new_job]
 
         # Calculate when the next alarm is due
         now = datetime.datetime.now()
@@ -77,6 +81,9 @@ def set_timer(update, context):
         alarm_due_delta = next_alarm - now
 
         update.message.reply_text(message_strings.SUCCESS.format(alarm_due_delta))
+        update.message.reply_text(
+            f"You currently have {len(context.chat_data['jobs'])} reminders"
+        )
 
     except (IndexError, ValueError):
         update.message.reply_text(message_strings.USAGE_STRING)
@@ -84,15 +91,15 @@ def set_timer(update, context):
 
 def unset(update, context):
     """Remove the job if the user changed their mind."""
-    if "job" not in context.chat_data:
-        update.message.reply_text("You have no active timer")
+    if "jobs" not in context.chat_data:
+        update.message.reply_text("You have no active reminders")
         return
 
-    job = context.chat_data["job"]
-    job.schedule_removal()
-    del context.chat_data["job"]
+    for i, job in enumerate(context.chat_data["jobs"]):
+        job.schedule_removal()
+    del context.chat_data["jobs"]
 
-    update.message.reply_text("Timer successfully unset!")
+    update.message.reply_text(f"{i+1} reminders successfully removed!")
 
 
 def main():
