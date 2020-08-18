@@ -17,7 +17,9 @@ bot.
 import logging
 from pathlib import Path
 import datetime
+from dateutil import tz
 import message_strings
+import util
 
 from telegram.ext import Updater, CommandHandler
 
@@ -45,11 +47,15 @@ def set_timer(update, context):
     chat_id = update.message.chat_id
     try:
         # args[0] should contain the time 
-        time_string = context.args[0]
+        time_string = context.args[util.CONTEXT_ARGS_TIME_INDEX]
         hour_string, minute_string = time_string.split(':')
         hour = int(hour_string)
         minute = int(minute_string)
-        reminder_time = datetime.time(hour, minute)
+
+        # Get timezone or use local if none is set
+        timezone = util.getitem(context.args, util.CONTEXT_ARGS_TIMEZONE_INDEX, tz.tzlocal())
+
+        reminder_time = datetime.time(hour, minute, tzinfo=timezone)
 
         # Add job to queue and stop current one if there is a timer already
         if 'job' in context.chat_data:
