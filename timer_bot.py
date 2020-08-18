@@ -1,3 +1,4 @@
+#%%
 # This program is dedicated to the public domain under the CC0 license.
 
 """
@@ -15,6 +16,8 @@ bot.
 
 import logging
 from pathlib import Path
+import datetime
+import message_strings
 
 from telegram.ext import Updater, CommandHandler
 
@@ -28,7 +31,7 @@ logger = logging.getLogger(__name__)
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
-    update.message.reply_text('Hi! Use /set <seconds> to set a timer')
+    update.message.reply_text(message_strings.USAGE_STRING)
 
 
 def alarm(context):
@@ -41,23 +44,24 @@ def set_timer(update, context):
     """Add a job to the queue."""
     chat_id = update.message.chat_id
     try:
-        # args[0] should contain the time for the timer in seconds
-        due = int(context.args[0])
-        if due < 0:
-            update.message.reply_text('Sorry we can not go back to future!')
-            return
+        # args[0] should contain the time 
+        time_string = context.args[0]
+        hour_string, minute_string = time_string.split(':')
+        hour = int(hour_string)
+        minute = int(minute_string)
+        reminder_time = datetime.time(hour, minute)
 
         # Add job to queue and stop current one if there is a timer already
         if 'job' in context.chat_data:
             old_job = context.chat_data['job']
             old_job.schedule_removal()
-        new_job = context.job_queue.run_once(alarm, due, context=chat_id)
+        new_job = context.job_queue.run_daily(alarm, reminder_time, context=chat_id)
         context.chat_data['job'] = new_job
 
-        update.message.reply_text('Timer successfully set!')
+        update.message.reply_text(message_strings.SUCCESS)
 
     except (IndexError, ValueError):
-        update.message.reply_text('Usage: /set <seconds>')
+        update.message.reply_text(message_strings.USAGE_STRING)
 
 
 def unset(update, context):
@@ -105,6 +109,8 @@ def main():
     # non-blocking and will stop the bot gracefully.
     updater.idle()
 
+
+#%%
 
 if __name__ == '__main__':
     main()
