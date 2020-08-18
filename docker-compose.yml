@@ -1,0 +1,8 @@
+version: "2.0"
+services:
+    tele_meds_bot:
+        build: .
+        volumes:
+            - ./token.secret:/tele_meds_bot/token.secret
+            # Use same timezone as host
+            - /etc/localtime:/etc/localtime:ro
