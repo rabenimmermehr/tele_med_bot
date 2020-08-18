@@ -6,6 +6,6 @@ dependencies:
   - pip
   - ipykernel
   - notebook
-  - flake8
+  - black
   - pip:
     - python-telegram-bot

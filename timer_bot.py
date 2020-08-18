@@ -24,8 +24,9 @@ import util
 from telegram.ext import Updater, CommandHandler
 
 # Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)
 
 logger = logging.getLogger(__name__)
 
@@ -39,16 +40,16 @@ def start(update, context):
 def alarm(context):
     """Send the alarm message."""
     job = context.job
-    context.bot.send_message(job.context, text='Beep!')
+    context.bot.send_message(job.context, text="Beep!")
 
 
 def set_timer(update, context):
     """Add a job to the queue."""
     chat_id = update.message.chat_id
     try:
-        # args[0] should contain the time 
+        # args[0] should contain the time
         time_string = context.args[util.CONTEXT_ARGS_TIME_INDEX]
-        hour_string, minute_string = time_string.split(':')
+        hour_string, minute_string = time_string.split(":")
         hour = int(hour_string)
         minute = int(minute_string)
 
@@ -59,11 +60,11 @@ def set_timer(update, context):
         reminder_time = datetime.time(hour, minute, tzinfo=tz.tzlocal())
 
         # Add job to queue and stop current one if there is a timer already
-        if 'job' in context.chat_data:
-            old_job = context.chat_data['job']
+        if "job" in context.chat_data:
+            old_job = context.chat_data["job"]
             old_job.schedule_removal()
         new_job = context.job_queue.run_daily(alarm, reminder_time, context=chat_id)
-        context.chat_data['job'] = new_job
+        context.chat_data["job"] = new_job
 
         # Calculate when the next alarm is due
         now = datetime.datetime.now()
@@ -83,15 +84,15 @@ def set_timer(update, context):
 
 def unset(update, context):
     """Remove the job if the user changed their mind."""
-    if 'job' not in context.chat_data:
-        update.message.reply_text('You have no active timer')
+    if "job" not in context.chat_data:
+        update.message.reply_text("You have no active timer")
         return
 
-    job = context.chat_data['job']
+    job = context.chat_data["job"]
     job.schedule_removal()
-    del context.chat_data['job']
+    del context.chat_data["job"]
 
-    update.message.reply_text('Timer successfully unset!')
+    update.message.reply_text("Timer successfully unset!")
 
 
 def main():
@@ -112,10 +113,11 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", start))
-    dp.add_handler(CommandHandler("set", set_timer,
-                                  pass_args=True,
-                                  pass_job_queue=True,
-                                  pass_chat_data=True))
+    dp.add_handler(
+        CommandHandler(
+            "set", set_timer, pass_args=True, pass_job_queue=True, pass_chat_data=True
+        )
+    )
     dp.add_handler(CommandHandler("unset", unset, pass_chat_data=True))
 
     # Start the Bot
@@ -129,5 +131,5 @@ def main():
 
 #%%
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
