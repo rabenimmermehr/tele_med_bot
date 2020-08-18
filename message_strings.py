@@ -1,2 +1,2 @@
-USAGE_STRING = 'Hi! Use `/set <hh:mm> <timezone-name>` to set daily reminder time in 24 hour format. <timezone-name> is optional, and has to be from this list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones '
-SUCCESS = "Timer successfully set"
+USAGE_STRING = "Hi! Use `/set <hh:mm>` to set daily reminder time in 24 hour format"
+SUCCESS = "Timer successfully set, next timer due in {}"

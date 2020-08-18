@@ -53,9 +53,10 @@ def set_timer(update, context):
         minute = int(minute_string)
 
         # Get timezone or use local if none is set
-        timezone = util.getitem(context.args, util.CONTEXT_ARGS_TIMEZONE_INDEX, tz.tzlocal())
+        # TODO Add timezone feature
+        # timezone = util.getitem(context.args, util.CONTEXT_ARGS_TIMEZONE_INDEX, tz.tzlocal())
 
-        reminder_time = datetime.time(hour, minute, tzinfo=timezone)
+        reminder_time = datetime.time(hour, minute, tzinfo=tz.tzlocal())
 
         # Add job to queue and stop current one if there is a timer already
         if 'job' in context.chat_data:
@@ -64,7 +65,17 @@ def set_timer(update, context):
         new_job = context.job_queue.run_daily(alarm, reminder_time, context=chat_id)
         context.chat_data['job'] = new_job
 
-        update.message.reply_text(message_strings.SUCCESS)
+        # Calculate when the next alarm is due
+        now = datetime.datetime.now()
+        next_alarm = now.replace(hour=reminder_time.hour, minute=reminder_time.minute)
+        if next_alarm < now:
+            # Alarm due tomorrow, adapt next_alarm accordingly
+            one_day_delta = datetime.timedelta(days=+1)
+            next_alarm = next_alarm + one_day_delta
+
+        alarm_due_delta = next_alarm - now
+
+        update.message.reply_text(message_strings.SUCCESS.format(alarm_due_delta))
 
     except (IndexError, ValueError):
         update.message.reply_text(message_strings.USAGE_STRING)
