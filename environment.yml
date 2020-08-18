@@ -1,4 +1,4 @@
-name: base
+name: tele_meds_bot
 channels:
   - defaults
 dependencies:
@@ -6,5 +6,6 @@ dependencies:
   - pip
   - ipykernel
   - notebook
+  - flake8
   - pip:
     - python-telegram-bot
